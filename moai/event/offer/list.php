@@ -18,7 +18,7 @@ try{
 
 	// 更新
 	$stmt = $dbh->prepare("select izakaya.seqno as seqno,event_candidate.date as offer_date, " .
-		"shop_name,shop_pref,shop_city,shop_address,shop_access,shop_time,shop_url,offer_amount,contact_tel, message " . 
+		"shop_name,shop_pref,shop_city,shop_address,shop_access,shop_time,shop_url,offer_amount,izakaya_offer.contact_tel as contact_tel, message " . 
 		"from izakaya_offer left join event_candidate on event_candidate.seqno=izakaya_offer.date_seqno,izakaya " . 
 		"where izakaya_offer.event_seqno=:seqno and izakaya.seqno=izakaya_offer.izakaya_seqno " .
 		"order by event_candidate.date desc");

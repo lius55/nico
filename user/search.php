@@ -15,7 +15,7 @@ try{
 	$account = get_msn($request["account"]);
 
 	// ユーザ検索
-	$stmt = $dbh->prepare("select seqno,account,nickname,photo from app_user where account=:account");
+	$stmt = $dbh->prepare("select seqno,account,nickname,photo from app_user where account=:account and deleted_date is null");
 	$stmt->bindParam(":account", $account);
 	$stmt->execute();
 

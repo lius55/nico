@@ -39,9 +39,14 @@ function validate_access_token() {
 	session_start();
 	if (!isset($_SESSION["access_token"])) {
 		http_response_code(401);
+		$response->response->msg = 'empty access_token';
+		echo json_encode($response, JSON_UNESCAPED_UNICODE);
 		exit;
 	} else if ($_SESSION["access_token"] != getRequestHeaders()[TOKEN_HEADER]) {
+		$response->response->msg = 'invalid access_token(' . $_SESSION["access_token"] . 
+			":" . getRequestHeaders()[TOKEN_HEADER];
 		http_response_code(401);
+		echo json_encode($response, JSON_UNESCAPED_UNICODE);
 		exit;
 	}
 }
@@ -145,11 +150,14 @@ function validate_length($key, $min = -1, $max = -1) {
  * @return true:json形式、false:json形式ではない
  */
 function is_json($string){
-   return is_string($string) && is_array(json_decode($string, true)) && (json_last_error() == JSON_ERROR_NONE) ? true : false;
+	if(!isset($string) || strlen($string) < 1) { return true; }
+	return is_string($string) && is_array(json_decode($string, true)) && (json_last_error() == JSON_ERROR_NONE) ? true : false;
 }
 
 /*
  * 電話番号取得
+ * @param $string 整形前の電話番号
+ * @return 整形後の電話番号
  */
 function get_msn($string) {
 	$return = $string;
@@ -159,6 +167,12 @@ function get_msn($string) {
 	return $return;
 }
 
+/*
+ * イベント候補日取得
+ * @param $dbh db接続
+ * @param $seqno seqno
+ * @param $order ソート順
+ */
 function get_event_candidate_list($dbh, $seqno, $order=1) {
 
 	$order_str = ($order == 0) ? "asc" : "desc";
@@ -201,6 +215,10 @@ header('Content-Type: application/json');
 try {
 	// リクエスト
 	$request = json_decode(file_get_contents('php://input'), true);
+
+	if (!isset($request)) { 
+		$request = $_POST;
+	}
 	// レスポンス
 	$response = new stdClass();
 	// validator作成
@@ -217,7 +235,8 @@ try {
 	$options = array(PDO::MYSQL_ATTR_INIT_COMMAND=>"SET CHARACTER SET 'utf8'");
 	$dbh = new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME, DB_USER, DB_PASSWORD, $options);
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(Exception $e) {
+	$dbh->query("set names utf8");
+} catch(Throwable $e) {
 	http_response_code(500);
 	exit;
 }

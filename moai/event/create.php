@@ -37,6 +37,7 @@ try{
 	$moai_event->waist_seqno = (int)$request["moai_event"]["waist_seqno"];
 	$moai_event->decided_seqno = null;
 	$moai_event->decided_date = null;
+	$moai_event->reqruit_offer = true;
 	$response->response->moai_event = $moai_event;
 
 	// レスポンス返却

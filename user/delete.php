@@ -8,7 +8,7 @@ include_once '../common/common.php';
 
 try{
 	// トークンチェック
-	// validate_access_token();
+	validate_access_token();
 	// 必須チェック
 	$validate->required('seqno');
 	$seqno = $request["seqno"];
@@ -22,13 +22,16 @@ try{
 	$user = $stmt->fetch(PDO::FETCH_OBJ);
 
 	$stmt_up = $dbh->prepare("update app_user set device_seqno=null,nickname=:nickname," . 
-		"account=:seqno,photo=null,access_token=null,password=null where seqno=:seqno");
+		"account=:seqno,photo=:photo,access_token=null,password=null,deleted_date=now() where seqno=:seqno");
 	$stmt_up->bindParam(":seqno", $seqno);
 	$stmt_up->bindParam(":nickname", $user->nickname);
+	$photo = HOST_NAME.'img/user/default.png';
+	$stmt_up->bindParam(":photo", $photo);
 	$stmt_up->execute();
 
 	// レスポンス返却
 	$response->response = new stdClass();
+	$response->result->code = RESPONSE_SUCCESS;
 	echo json_encode($response, JSON_UNESCAPED_UNICODE);
 
 }catch(Throwable $e) {

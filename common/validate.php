@@ -52,10 +52,10 @@ class Validate {
 	 * @param $max
 	 */
 	public function length($key, $min = -1, $max = -1, $error_code = 999) {
-		if (($min > 0) && (strlen($this->request[$key]) < $min)) {
+		if (($min > 0) && (mb_strlen($this->request[$key], "UTF-8") < $min)) {
 			$this->response_error('invalid parameter ' . $key, 200, $error_code);
 		}
-		if (($max > 0) && (strlen($this->request[$key]) > $max)) {
+		if (($max > 0) && (mb_strlen($this->request[$key], "UTF-8") > $max)) {
 			$this->response_error('invalid parameter ' . $key, 200, $error_code);
 		}
 	}
@@ -77,7 +77,7 @@ class Validate {
 	 * @param $seqno app_userのseqno
 	 */
 	public function app_user_exists($dbh, $seqno) {
-		$stmt = $dbh->prepare("select count(*) as cnt from app_user where seqno=:seqno");
+		$stmt = $dbh->prepare("select count(*) as cnt from app_user where seqno=:seqno and deleted_date is null");
 		$stmt->bindParam(":seqno", $seqno);
 		$stmt->execute();
 		$row = $stmt->fetch();
@@ -91,16 +91,35 @@ class Validate {
 
 	/*
 	 * アカウント存在チェック
-	 * 存在しない場合、code=201返却
+	 * 存在する場合、code=201返却
 	 * @param $dbh データソース接続
 	 * @param $account 電話番号
 	 */
 	public function account_exists($dbh, $account) {
-		$stmt = $dbh->prepare("select count(*) as cnt from app_user where account=:account");
+		$stmt = $dbh->prepare("select count(*) as cnt from app_user where account=:account and deleted_date is null");
 		$stmt->bindParam(":account", $account);
 		$stmt->execute();
 		$row = $stmt->fetch();
 		if ($row["cnt"] != 0) {
+			$response->result->code = 201;
+			$response->response = new stdClass();
+			echo json_encode($response, JSON_UNESCAPED_UNICODE);
+			exit;
+		}
+	}
+
+	/*
+	 * アカウント存在チェック
+	 * 存在しない場合、code=201返却
+	 * @param $dbh データソース接続
+	 * @param $account 電話番号
+	 */
+	public function account_not_exists($dbh, $account) {
+		$stmt = $dbh->prepare("select count(*) as cnt from app_user where account=:account and deleted_date is null");
+		$stmt->bindParam(":account", $account);
+		$stmt->execute();
+		$row = $stmt->fetch();
+		if ($row["cnt"] == 0) {
 			$response->result->code = 201;
 			$response->response = new stdClass();
 			echo json_encode($response, JSON_UNESCAPED_UNICODE);

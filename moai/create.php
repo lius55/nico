@@ -58,6 +58,7 @@ try{
 	$dbh->commit();
 
 	// レスポンス返却
+	$response->result->code = RESPONSE_SUCCESS;
 	echo json_encode($response, JSON_UNESCAPED_UNICODE);
 
 }catch(Throwable $e) {

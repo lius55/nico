@@ -17,7 +17,7 @@ try{
 	$validate->moai_exists($dbh, $seqno);
 
 	$order_str = ($order == 0) ? "asc" : "desc";
-	$stmt = $dbh->prepare("select moai_event.seqno as seqno,area,waist_seqno,message,start_time,decided_seqno," .
+	$stmt = $dbh->prepare("select moai_event.seqno as seqno,area,waist_seqno,message,start_time,decided_seqno,reqruit_offer," .
 		"date as decided_date from moai_event left join event_candidate on moai_event.decided_seqno=event_candidate.seqno " .
 		"where group_seqno=:seqno order by moai_event.seqno ".$order_str);
 	$stmt->bindParam(":seqno", $seqno);
@@ -30,6 +30,7 @@ try{
 		$row->seqno = (int)$row->seqno;
 		$row->waist_seqno = (int)$row->waist_seqno;
 		$row->decided_seqno = ($row->decided_seqno == 0) ? null : (int)$row->decided_seqno;
+		$row->reqruit_offer = (boolean)$row->reqruit_offer;
 		$response->response->moai_event_list[] = $row;
 	}
 	// レスポンス返却

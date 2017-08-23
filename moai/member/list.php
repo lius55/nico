@@ -17,7 +17,8 @@ try{
 	$validate->moai_exists($dbh, $seqno);
 
 	// 一覧取得
-	$stmt = $dbh->prepare("select app_user.seqno as seqno,account,nickname,photo from moai_user,app_user " .
+	$stmt = $dbh->prepare("select app_user.seqno as seqno,account,nickname,photo,deleted_date " .
+		"from moai_user,app_user " .
 		"where moai_user.user_seqno=app_user.seqno and moai_user.moai_seqno=:seqno");
 	$stmt->bindParam(":seqno", $seqno);
 	$stmt->execute();

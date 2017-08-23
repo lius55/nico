@@ -11,6 +11,7 @@ try{
 	$validate->required('account,password,device_token');
 	$account = get_msn($request["account"]);
 	$password = $request["password"];
+	$device_token = $request["device_token"];
 
 	// 認証
 	$stmt = $dbh->prepare("select count(*) as cnt from app_user where account=:account and password =:password");
@@ -46,6 +47,18 @@ try{
 		$user = $stmt->fetch(PDO::FETCH_OBJ);
 		$user->seqno = (int)$user->seqno;
 		$response->response->app_user = $user;
+
+		// デバイストークン検索&更新
+		$stmt = $dbh->prepare("select seqno from app_device where token=:device_token");
+		$stmt->bindParam(":device_token", $device_token);
+		$stmt->execute();
+		if ($stmt->rowCount() > 0) {
+			$update_seqno = $stmt->fetch()["seqno"];
+			$stmt = $dbh->prepare("update app_user set device_seqno=:seqno where account=:account");
+			$stmt->bindParam(":seqno", $update_seqno);
+			$stmt->bindParam(":account", $account);
+			$stmt->execute();
+		}
 	}
 
 	// レスポンス返却

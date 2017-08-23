@@ -38,6 +38,18 @@ try{
 
 	$response->result->code = RESPONSE_SUCCESS;
 
+	// デバイストークン検索&更新
+	$stmt = $dbh->prepare("select seqno from app_device where token=:device_token");
+	$stmt->bindParam(":device_token", $device_token);
+	$stmt->execute();
+	if ($stmt->rowCount() > 0) {
+		$update_seqno = $stmt->fetch()["seqno"];
+		$stmt = $dbh->prepare("update app_user set device_seqno=:seqno where account=:account");
+		$stmt->bindParam(":seqno", $update_seqno);
+		$stmt->bindParam(":account", $account);
+		$stmt->execute();
+	}
+
 	// UUID形式(8-4-4-4-12)のトークン作成
 	$uuid = 
 		substr(md5(uniqid(mt_rand(), true)),0,8).'-'.
